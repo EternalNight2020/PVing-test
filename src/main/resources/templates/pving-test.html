@@ -19,21 +19,19 @@
         table,
         th,
         td {
-
             border: 1px solid black;
-
             border-collapse: collapse;
-
         }
 
 
         th,
         td {
-
             padding: 5px;
-
         }
 
+        table th {
+            background-color: lightgray;
+        }
     </style>
 
 </head>
@@ -53,26 +51,23 @@
 
 <div class="progress" style="width: 500px;margin: 15px 10px;">
 
-    <div class="progress-bar progress-bar-striped active" style="width: 0%" id="percent">
-
-        0%
-
-
-    </div>
-
     <table id="demo01">
+        <thead>
+            <tr>
+                <th>C.1.1</th>
+                <th>D.1</th>
+                <th>E.i.1.1a</th>
+                <th>G.k.2.2</th>
+                <th>effectiveTime</th>
+            </tr>
+        </thead>
+        <tbody>
 
+        </tbody>
 
     </table>
 
 </div>
-
-
-<img src="../static/loading.gif" style="display: none;" alt="" id="loading">
-
-<!-- 3.img标签，来选择上传文件后的图片 -->
-
-<img src="" alt="" id="img" width="800">
 
 
 <script>
@@ -91,103 +86,44 @@
 
             file_format = file_name.substr(index + 1).toUpperCase();//文件格式后缀
 
-            if (file_format != 'XLS' && file_format != 'XLSX') {
 
-                alert("只能上传.xls和.xlsx类型的文件!");
-
+            if (file_format != 'XML') {
+                alert("只能上传.xml类型的文件!");
             } else {
+                $('#demo01 tbody').html('');
 
-                //读取文件内容
-
-                var reader = new FileReader();
-
-                reader.readAsBinaryString(files);
-
-                reader.onload = function (e) {
-
-                    var data = e.target.result;
-
-                    var wb = XLSX.read(data, {
-
-                        type: 'binary' // 以二进制流方式读取获得整份excel表格对象
-
-                    });
-
-                    var sheet_names = wb.SheetNames;//获取excel中所有表名称
-
-                    // console.log(sheet_name);
-
-                    var sheet1_name = sheet_names[0];//获取excel中第一张表名称
-
-                    var sheet01_obj = XLSX.utils.sheet_to_json(wb.Sheets[sheet1_name]);//获取excel中第一张表数据，数组类型，每一行数据都是一个对象
-
-                    // console.log(sheet01_obj);
-
-                    // console.log(sheet01_obj.length);
-
-                    var table1 = "";
-
-                    var table2 = "";
-
-                    var table3 = "";
-
-
-                    var keyArr = [];
-
-                    table1 += "<tr>";
-
-                    for (var key01 in sheet01_obj[0]) {
-
-                        keyArr.push(key01);
-
-                        table1 += '<th nowrap>' + key01 + '</th>';//表头
-
-                        // var table="<tr><th>Artist</th><th>Title</th></tr>";
-
-                        // console.log(table1);
-
-
-                    }
-                    ;
-
-                    table2 += "</tr>";
-
-                    // console.log(table1);
-
-
-                    for (var i = 0; i < sheet01_obj.length; i++) {
-
-                        table2 += "<tr>";
-
-                        for (var j in sheet01_obj[i]) {
-
-                            // console.log('value:'+j);
-
-                            table2 += '<td nowrap>' + sheet01_obj[i][j] + '</td>';//表数据
-
-
+                var formData = new FormData();
+                formData.append("file", $("#file01")[0].files[0]);
+                $.ajax({
+                    type: "POST",
+                    url: '/analyzeXml.json',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        if(data.code != '10000') {
+                            alert(data.msg);
+                            return;
                         }
-                        ;
+                        var table = document.getElementById("demo01").getElementsByTagName('tbody')[0];
+                        $.each(data.data, function(index, item) {
+                            var row = table.insertRow();
+                            var cell0 = row.insertCell(0);
+                            var cell1 = row.insertCell(1);
+                            var cell2 = row.insertCell(2);
+                            var cell3 = row.insertCell(3);
+                            var cell4 = row.insertCell(4);
 
-                        table2 += "</tr>";
-
-
+                            cell0.textContent = item.c11;
+                            cell1.textContent = item.d1;
+                            cell2.textContent = item.ei11a;
+                            cell3.textContent = item.gk22;
+                            cell4.textContent = item.effectiveTime;
+                        });
                     }
-
-                    console.log(table1 + table2);
-
-                    document.getElementById("demo01").innerHTML = table1 + table2;
-
-
-                }
-
-
+                });
             }
-
-
         }
-
-
     });
 
 
